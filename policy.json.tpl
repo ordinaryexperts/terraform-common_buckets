@@ -22,7 +22,7 @@
       "Resource": "arn:aws:s3:::${bucket}/*",
       "Condition": {
         "Null": {
-          "s3:x-amz-server-side-encryption": true
+          "s3:x-amz-server-side-encryption": "true"
         }
       }
     }

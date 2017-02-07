@@ -1,44 +1,20 @@
 variable "env" {}
 variable "name" {}
 
-resource "aws_s3_bucket" "log_bucket" {
-   acl = "log-delivery-write"
-   bucket = "${var.name}-${var.env}-logs"
-}
-
-data "template_file" "policy" {
-  template = "${file("${path.module}/policy.json.tpl")}"
-  vars {
-    bucket = "${var.name}-${var.env}-secrets"
+resource "aws_cloudformation_stack" "common_buckets" {
+  name = "${var.name}-${var.env}-common-buckets-stack"
+  parameters {
+    Env = "${var.env}"
+    Name = "${var.name}"
   }
-}
-
-resource "aws_s3_bucket" "secrets_bucket" {
-  acl = "private"
-  bucket = "${var.name}-${var.env}-secrets"
-  logging {
-    target_bucket = "${aws_s3_bucket.log_bucket.id}"
-    target_prefix = "secrets/"
-  }
-
-  policy = "${data.template_file.policy.rendered}"
-  versioning {
-    enabled = true
-  }
-}
-
-resource "aws_s3_bucket" "chef_bucket" {
-  acl = "private"
-  bucket = "${var.name}-${var.env}-chef"
-  versioning {
-    enabled = true
-  }
-}
+  template_body = "${file("${path.module}/template.yaml")}"
+  on_failure = "DELETE"
+}  
 
 output "secrets_bucket" {
-  value = "${var.name}-${var.env}-secrets"
+  value = "${aws_cloudformation_stack.common_buckets.outputs["SecretsBucket"]}"
 }
 
 output "chef_bucket" {
-  value = "${var.name}-${var.env}-chef"
+  value = "${aws_cloudformation_stack.common_buckets.outputs["ChefBucket"]}"
 }

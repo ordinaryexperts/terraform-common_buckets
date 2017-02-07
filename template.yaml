@@ -1,0 +1,66 @@
+AWSTemplateFormatVersion: '2010-09-09'
+
+Parameters:
+  Env:
+    Type: String
+
+  Name:
+    Type: String
+
+Resources:
+  LoggingBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      AccessControl: 'LogDeliveryWrite'
+
+  SecretsBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      AccessControl: 'Private'
+      LoggingConfiguration:
+        DestinationBucketName: !Ref LoggingBucket
+        LogFilePrefix: 'secrets/'
+      VersioningConfiguration:
+        Status: Enabled
+
+  SecretsBucketPolicy:
+    Type: 'AWS::S3::BucketPolicy'
+    Properties:
+      Bucket: !Ref SecretsBucket
+      PolicyDocument:
+        Statement:
+          -
+            Sid: 'DenyIncorrectEncryptionHeader'
+            Effect: 'Deny'
+            Principal: '*'
+            Action: 's3:PutObject'
+            Resource: !Sub "arn:aws:s3:::${SecretsBucket}/*"
+            Condition:
+              StringNotEquals:
+                s3:x-amz-server-side-encryption: 'AES256'
+          -
+            Sid: 'DenyUnEncryptedObjectUploads'
+            Effect: 'Deny'
+            Principal: '*'
+            Action: 's3:PutObject'
+            Resource: !Sub "arn:aws:s3:::${SecretsBucket}/*"
+            Condition:
+              'Null':
+                s3:x-amz-server-side-encryption: 'true'
+
+  ChefBucket:
+    Type: 'AWS::S3::Bucket'
+    Properties:
+      AccessControl: 'Private'
+      VersioningConfiguration:
+        Status: Enabled
+
+Outputs:
+  LoggingBucket:
+    Value: !Ref LoggingBucket
+
+  SecretsBucket:
+    Value: !Ref SecretsBucket
+
+  ChefBucket:
+    Value: !Ref ChefBucket
