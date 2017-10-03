@@ -1,19 +1,40 @@
 AWSTemplateFormatVersion: '2010-09-09'
 
 Parameters:
+
+  EnableSecretsBucket:
+    Default: true
+    Type: String
+    AllowedValues: [true, false]
+
+  EnableChefBucket:
+    Default: true
+    Type: String
+    AllowedValues: [true, false]
+
   Env:
     Type: String
 
   Name:
     Type: String
 
+Conditions:
+
+  SecretsBucketEnabled:
+    !Equals [true, !Ref EnableSecretsBucket]
+
+  ChefBucketEnabled:
+    !Equals [true, !Ref EnableChefBucket]
+
 Resources:
   LoggingBucket:
+    Condition: SecretsBucketEnabled
     Type: 'AWS::S3::Bucket'
     Properties:
       AccessControl: 'LogDeliveryWrite'
 
   SecretsBucket:
+    Condition: SecretsBucketEnabled
     Type: 'AWS::S3::Bucket'
     Properties:
       AccessControl: 'Private'
@@ -24,6 +45,7 @@ Resources:
         Status: Enabled
 
   SecretsBucketPolicy:
+    Condition: SecretsBucketEnabled
     Type: 'AWS::S3::BucketPolicy'
     Properties:
       Bucket: !Ref SecretsBucket
@@ -49,6 +71,7 @@ Resources:
                 s3:x-amz-server-side-encryption: 'true'
 
   ChefBucket:
+    Condition: ChefBucketEnabled
     Type: 'AWS::S3::Bucket'
     Properties:
       AccessControl: 'Private'
@@ -57,10 +80,10 @@ Resources:
 
 Outputs:
   LoggingBucket:
-    Value: !Ref LoggingBucket
+    Value: !If [SecretsBucketEnabled, !Ref LoggingBucket, '']
 
   SecretsBucket:
-    Value: !Ref SecretsBucket
+    Value: !If [SecretsBucketEnabled, !Ref SecretsBucket, '']
 
   ChefBucket:
-    Value: !Ref ChefBucket
+    Value: !If [ChefBucketEnabled, !Ref ChefBucket, '']
