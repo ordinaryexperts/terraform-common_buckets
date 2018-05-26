@@ -87,3 +87,7 @@ Outputs:
 
   ChefBucket:
     Value: !If [ChefBucketEnabled, !Ref ChefBucket, '']
+
+  NewOutput:
+    Value: 'test'
+
