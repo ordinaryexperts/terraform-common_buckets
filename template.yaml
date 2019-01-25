@@ -87,3 +87,6 @@ Outputs:
 
   ChefBucket:
     Value: !If [ChefBucketEnabled, !Ref ChefBucket, '']
+
+  LastModified:
+    Value: 20180526
