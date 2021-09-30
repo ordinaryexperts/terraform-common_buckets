@@ -9,7 +9,7 @@ variable "name" {}
 
 resource "aws_cloudformation_stack" "common_buckets" {
   name = "${var.name}-${var.env}-common-buckets-stack"
-  parameters {
+  parameters = {
     EnableSecretsBucket = "${var.enable_secrets_bucket}"
     EnableChefBucket = "${var.enable_chef_bucket}"
     Env = "${var.env}"
