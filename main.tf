@@ -15,7 +15,7 @@ resource "aws_cloudformation_stack" "common_buckets" {
     Env = "${var.env}"
     Name = "${var.name}"
   }
-  template_body = "${file("${path.module}/template.yaml")}"
+  template_body = "${file("path.module/template.yaml")}"
   on_failure = "DELETE"
 }
 
